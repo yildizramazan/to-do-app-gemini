@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from models import Base, ToDo
-from database import engine, SessionLocal
+from database import engine
 from routers.auth import router as auth_router
 from routers.todo import router as todo_router
 
