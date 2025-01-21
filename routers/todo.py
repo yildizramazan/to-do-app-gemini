@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 from models import Base, ToDo
 from sqlalchemy.orm import Session
 from database import engine, SessionLocal
-
+from routers.auth import get_current_user
 
 router = APIRouter(
     prefix="/todo",
@@ -28,9 +28,15 @@ def get_db():
 
 
 db_dependency = Annotated[Session, Depends(get_db)]
+user_dependency = Annotated[dict, Depends(get_current_user)]
+
+
+
 
 @router.get("/read-all")
-async def read_all(db: db_dependency):
+async def read_all(user: user_dependency, db: db_dependency):
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     return db.query(ToDo).all()
 
 @router.get("/get-by-id/{todo_id}", status_code=status.HTTP_200_OK)
