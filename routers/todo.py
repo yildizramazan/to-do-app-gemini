@@ -1,9 +1,9 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, status, Path, HTTPException
 from pydantic import BaseModel, Field
-from models import Base, ToDo
+from models import ToDo
 from sqlalchemy.orm import Session
-from database import engine, SessionLocal
+from database import SessionLocal
 from routers.auth import get_current_user
 
 router = APIRouter(
@@ -34,7 +34,7 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 
 
 @router.get("/read-all")
-async def read_all(user: user_dependency, db: db_dependency):
+async def read_all(user: user_dependency, db: db_dependency = db_dependency):
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     return db.query(ToDo).filter(ToDo.owner_id == user.get("id")).all()
@@ -43,9 +43,7 @@ async def read_all(user: user_dependency, db: db_dependency):
 async def read_by_id(user: user_dependency, db: db_dependency, todo_id: int = Path(ge=1)):
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
-
     todo = db.query(ToDo).filter(ToDo.id == todo_id).filter(ToDo.owner_id == user.get("id")).first()
-
     if todo is not None:
         return todo
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="ToDo not found.")

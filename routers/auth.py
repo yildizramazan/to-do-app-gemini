@@ -27,6 +27,7 @@ def get_db():
         yield db
     finally:
         db.close()
+
 db_dependency = Annotated[Session, Depends(get_db)]
 
 bcrypt_context_hashed = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -90,7 +91,7 @@ async def create_user(db: db_dependency, request: CreateUserRequest):
 
 
 @router.post("/token", response_model = Token)
-async def create_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],db: db_dependency = db_dependency):
+async def create_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()],db: db_dependency):
     user = authenticate_user(form_data.username, form_data.password, db)
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
